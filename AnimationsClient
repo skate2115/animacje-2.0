@@ -1,0 +1,37 @@
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local currentAnimationTrack
+
+ReplicatedStorage.StartAnimation.OnClientEvent:Connect(function(animId)
+	local player = game.Players.LocalPlayer
+	local character = player.Character or player.CharacterAdded:Wait()
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+	if humanoid then
+		local animator = humanoid:FindFirstChildOfClass("Animator")
+		if not animator then
+			animator = Instance.new("Animator")
+			animator.Parent = humanoid
+		end
+
+		if currentAnimationTrack then
+			currentAnimationTrack:Stop()
+			currentAnimationTrack:Destroy()
+		end
+
+		local animation = Instance.new("Animation")
+		animation.AnimationId = "rbxassetid://" .. animId
+
+		currentAnimationTrack = animator:LoadAnimation(animation)
+		currentAnimationTrack:Play()
+
+		local stopAnimationConnection
+		stopAnimationConnection = UserInputService.InputBegan:Connect(function(input)
+			if input.KeyCode == Enum.KeyCode.X then
+				currentAnimationTrack:Stop()
+				stopAnimationConnection:Disconnect()
+			end
+		end)
+	end
+end)
